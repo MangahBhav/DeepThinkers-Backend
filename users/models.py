@@ -15,6 +15,7 @@ class User(AbstractUser, models.Model):
     email = models.EmailField(unique=True)
     profile_image = CloudinaryField('profile_image', null=True, blank=True)
     date = models.DateTimeField(auto_now_add=True)
+    # friends = models.ManyToManyField('users.User', related_name='friends')
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
@@ -34,3 +35,11 @@ class User(AbstractUser, models.Model):
 
     def __str__(self):
         return self.username
+
+
+class FriendRequest(models.Model):
+    initiator = models.ForeignKey('users.User', on_delete=models.CASCADE,
+                                  related_name='initiated_friend_requests')
+    receiver = models.ForeignKey('users.User', on_delete=models.CASCADE,
+                                 related_name='received_friend_requests')
+    mutual = models.BooleanField(default=False)

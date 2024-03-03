@@ -1,4 +1,6 @@
 from djongo import models
+
+
 # Create your models here.
 
 
@@ -24,8 +26,21 @@ class Post(models.Model):
     def comments_count(self):
         return self.comments.count()
 
+    @property
+    def likes_details(self):
+        likes = list(self.likes.all())
+        return {
+            "very_deep": len(list(filter(lambda x: x == "very_deep", likes))),
+            "deep": len(list(filter(lambda x: x == "deep", likes))),
+            "shallow": len(list(filter(lambda x: x == "shallow", likes))),
+            "very_shallow": len(list(filter(lambda x: x == "very_shallow", likes)))
+        }
+
     def __str__(self):
         return self.title
+
+    class Meta:
+        ordering = ['_id']
 
 
 class Comment(models.Model):
@@ -42,8 +57,6 @@ class Comment(models.Model):
             return None
         return self.author
 
-
-
     def __str__(self):
         return self.content
 
@@ -51,8 +64,11 @@ class Comment(models.Model):
 class Like(models.Model):
     _id = models.ObjectIdField(primary_key=True)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True, related_name='likes')
-    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, null=True, related_name='likes')
-    author = models.ForeignKey('users.User', on_delete=models.CASCADE)
+    # comment = models.ForeignKey(Comment, on_delete=models.CASCADE, null=True, related_name='likes')
+    category = models.CharField(choices=(('very_deep', 'very_deep'), ('deep', 'deep'),
+                                         ('shallow', 'shallow'), ('very_shallow', 'very_shallow')), max_length=20,
+                                null=False, blank=False)
+    user = models.ForeignKey('users.User', on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

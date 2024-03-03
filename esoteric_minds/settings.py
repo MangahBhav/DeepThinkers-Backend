@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'drf_spectacular',
+    'drf_spectacular_sidecar',
     'cloudinary',
     'rest_framework',
     'users',
@@ -80,6 +82,20 @@ DATABASES = {
         'ENGINE': 'djongo',
         'NAME': 'esoteric_minds',
     }
+}
+
+SPECTACULAR_SETTINGS = {
+    # OTHER SETTINGS
+
+    'TITLE': 'Esoteric Minds API',
+    'DESCRIPTION': "API documentation for Esoteric minds. "
+                   "Esoteric minds is a social media platform for people who are interested in the esoteric.",
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': True,
+
+    'SWAGGER_UI_DIST': 'SIDECAR',
+    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
+    'REDOC_DIST': 'SIDECAR',
 }
 
 # Password validation
@@ -129,6 +145,7 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 10,
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 JWT_ENCRYPTION_METHOD = 'HS256'

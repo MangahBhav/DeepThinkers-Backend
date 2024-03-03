@@ -1,11 +1,13 @@
-from rest_framework.generics import CreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import CreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, ListCreateAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from users.models import User
-from users.serializers import UserSerializer, LoginSerializer
+from rest_framework.exceptions import ValidationError
+from users.models import User, FriendRequest
+from users.serializers import UserSerializer, LoginSerializer, FriendRequestSerializer
 from bson import ObjectId
 
 from django.http import Http404
+
 
 class RegisterView(CreateAPIView):
     serializer_class = UserSerializer
@@ -68,3 +70,62 @@ class UserDetailView(RetrieveUpdateDestroyAPIView):
     def perform_destroy(self, instance):
         self.check_object_permissions(self.request, self.get_object())
         instance.delete()
+
+
+class UserSearchView(ListAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        return User.objects.all()
+
+
+class FriendRequestView(ListCreateAPIView):
+    serializer_class = FriendRequestSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return UserSerializer
+        else:
+            return FriendRequestSerializer
+
+    def get_queryset(self):
+        user_id = self.kwargs['_id']
+        # retrieve all users that the user_id has made a friend request to.
+        requests = FriendRequest.objects.filter(initiator=ObjectId(user_id))
+        return User.objects.filter(_id__in=list(map(lambda x: x.receiver._id, requests)))
+
+    def perform_create(self, *args, **kwargs):
+        serializer = self.get_serializer(data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            initiator = self.request.user
+            receiver = User.objects.get(_id=ObjectId(serializer.validated_data['receiver']))
+
+            if initiator == receiver:
+                raise ValidationError(detail="can not add yourself as a friend")
+
+            friend_request = FriendRequest.objects.get_or_create(
+                initiator=initiator,
+                receiver=receiver
+            )
+
+            mutual_friend_request = FriendRequest.objects.get(
+                initiator=receiver,
+                receiver=initiator
+            )
+
+            if mutual_friend_request:
+                friend_request.mutual = True
+                mutual_friend_request.mutual = True
+
+                friend_request.save()
+                mutual_friend_request.save()
+
+        except User.DoesNotExist:
+            raise ValidationError(detail="user does not exist")
+
+        except FriendRequest.DoesNotExist:
+            pass

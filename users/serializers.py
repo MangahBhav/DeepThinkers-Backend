@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
-from users.models import User
+from users.models import User, FriendRequest
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -31,3 +31,12 @@ class LoginSerializer(serializers.Serializer):
             return attrs
         else:
             raise serializers.ValidationError('Invalid login details provided')
+
+
+class FriendRequestSerializer(serializers.ModelSerializer):
+    initiator = serializers.CharField(read_only=True)
+    receiver = serializers.CharField(required=True)
+
+    class Meta:
+        model = FriendRequest
+        fields = "__all__"
