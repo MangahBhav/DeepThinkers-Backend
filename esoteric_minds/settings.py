@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import os
 import cloudinary
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +28,7 @@ SECRET_KEY = 'django-insecure-_42h!hs!oy!r2ucw&tfm7^d&_c%cx^^ci(*(in5@%lpuaw49+z
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', os.environ.get('HOSTED_DOMAIN')]
 
 # Application definition
 
@@ -77,12 +80,29 @@ WSGI_APPLICATION = 'esoteric_minds.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'djongo',
-        'NAME': 'esoteric_minds',
+if os.environ.get('DJANGO_ENV') != "production":
+    DATABASES = {
+        'default': {
+            'ENGINE': 'djongo',
+            'NAME': 'esoteric_minds',
+        }
     }
-}
+
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'djongo',
+            'NAME': 'esoteric_minds',
+            'ENFORCE_SCHEMA': False,
+            "CLIENT": {
+                'name': 'kofi-store',
+                'host': os.environ.get('MONGO_URI') or 'mongodb://localhost:27017/store',
+                'username': 'Kcee',
+                "password": os.environ.get('MONGO_PASSWORD', ''),
+                "authMechanism": "SCRAM-SHA-1"
+            }
+        }
+    }
 
 SPECTACULAR_SETTINGS = {
     # OTHER SETTINGS
