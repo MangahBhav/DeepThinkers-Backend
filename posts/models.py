@@ -28,19 +28,23 @@ class Post(models.Model):
 
     @property
     def likes_details(self):
-        likes = list(self.likes.all())
+        likes = self.likes.all()
+
         return {
-            "very_deep": len(list(filter(lambda x: x == "very_deep", likes))),
-            "deep": len(list(filter(lambda x: x == "deep", likes))),
-            "shallow": len(list(filter(lambda x: x == "shallow", likes))),
-            "very_shallow": len(list(filter(lambda x: x == "very_shallow", likes)))
+            "very_deep": len(list(filter(lambda x: x.category == "very_deep", likes))),
+            "deep": len(list(filter(lambda x: x.category == "deep", likes))),
+            "shallow": len(list(filter(lambda x: x.category == "shallow", likes))),
+            "very_shallow": len(list(filter(lambda x: x.category == "very_shallow", likes)))
         }
+
+    def get_liked(self, user):
+        return self.likes.filter(user=user).first()
 
     def __str__(self):
         return self.title
 
     class Meta:
-        ordering = ['_id']
+        ordering = ['-_id']
 
 
 class Comment(models.Model):
@@ -60,6 +64,9 @@ class Comment(models.Model):
     def __str__(self):
         return self.content
 
+    class Meta:
+        ordering = ['-_id']
+
 
 class Like(models.Model):
     _id = models.ObjectIdField(primary_key=True)
@@ -72,4 +79,4 @@ class Like(models.Model):
     date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.author
+        return self.category

@@ -4,13 +4,35 @@ from posts.models import Post, Comment, Like
 from users.serializers import UserSerializer
 
 
+class LikeSerializer(serializers.ModelSerializer):
+    category = serializers.ChoiceField(choices=(('very_deep', 'very_deep'), ('deep', 'deep'),
+                                                ('shallow', 'shallow'), ('very_shallow', 'very_shallow')),
+                                       required=True, allow_blank=False)
+    post = serializers.CharField(read_only=True)
+    user = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = Like
+        fields = "__all__"
+
+
 class PostSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
+
+    liked = serializers.SerializerMethodField()
+
+    def get_liked(self, post):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            liked = post.get_liked(request.user)
+            if liked:
+                return liked.category
+        return None
 
     class Meta:
         model = Post
         fields = ['_id', 'title', 'content', 'date', 'user', 'anonymous', 'likes_count', 'comments_count',
-                  'likes_details']
+                  'likes_details', 'liked']
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -28,14 +50,3 @@ class PostDetailSerializer(PostSerializer):
         model = Post
         fields = PostSerializer.Meta.fields + ['comments']
 
-
-class LikeSerializer(serializers.ModelSerializer):
-    category = serializers.ChoiceField(choices=(('very_deep', 'very_deep'), ('deep', 'deep'),
-                                                ('shallow', 'shallow'), ('very_shallow', 'very_shallow')),
-                                       required=True, allow_blank=False)
-    post = serializers.CharField(read_only=True)
-    user = serializers.CharField(read_only=True)
-
-    class Meta:
-        model = Like
-        fields = "__all__"
