@@ -28,3 +28,4 @@ wheels/
 *.iml
 .venv/
 db.sqlite3
+.env
