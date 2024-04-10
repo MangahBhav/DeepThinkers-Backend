@@ -101,7 +101,7 @@ else:
             'NAME': 'esoteric_minds',
             'ENFORCE_SCHEMA': False,
             "CLIENT": {
-                'name': 'kofi-store',
+                'name': 'esoteric_minds',
                 'host': os.environ.get('MONGO_URI'),
                 'username': 'Kcee',
                 "password": os.environ.get('MONGO_PASSWORD', ''),
