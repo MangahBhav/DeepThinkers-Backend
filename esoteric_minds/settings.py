@@ -102,7 +102,7 @@ else:
             'ENFORCE_SCHEMA': False,
             "CLIENT": {
                 'name': 'kofi-store',
-                'host': os.environ.get('MONGO_URI') or 'mongodb://localhost:27017/store',
+                'host': os.environ.get('MONGO_URI'),
                 'username': 'Kcee',
                 "password": os.environ.get('MONGO_PASSWORD', ''),
                 "authMechanism": "SCRAM-SHA-1"
