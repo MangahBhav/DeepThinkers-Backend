@@ -57,15 +57,14 @@ class UserDetailView(RetrieveUpdateDestroyAPIView):
             self.permission_denied(request, message='You do not have permission to perform this action.')
 
     def perform_update(self, serializer):
-        serializer = self.get_serializer(instance=self.get_object(), data=self.request.data, partial=True)
-
         self.check_object_permissions(self.request, self.get_object())
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return Response(serializer.data)
+            return serializer.save()
 
     def put(self, request, *args, **kwargs):
-        return self.perform_update(self.get_serializer())
+        user = self.perform_update(self.get_serializer(instance=self.get_object(),
+                                                       data=self.request.data, partial=True))
+        return Response(data=self.serializer_class(instance=user).data)
 
     def perform_destroy(self, instance):
         self.check_object_permissions(self.request, self.get_object())

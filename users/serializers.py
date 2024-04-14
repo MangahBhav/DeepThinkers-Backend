@@ -8,6 +8,10 @@ class UserSerializer(serializers.ModelSerializer):
     profile_image = serializers.ImageField(required=False)
     password = serializers.CharField(write_only=True, required=True)
 
+    def create(self, validated_data):
+        user = User.objects.create_user(**validated_data)
+        return user
+
     class Meta:
         model = User
         fields = ['_id', 'username', 'email', 'profile_image', 'password', 'date']

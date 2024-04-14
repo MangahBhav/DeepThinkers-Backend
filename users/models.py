@@ -30,7 +30,6 @@ class User(AbstractUser, models.Model):
         return token
 
     def save(self, *args, **kwargs):
-        self.set_password(self.password)
         super(User, self).save(*args, **kwargs)
 
     def __str__(self):
