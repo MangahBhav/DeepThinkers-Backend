@@ -4,7 +4,7 @@ from posts.models import Post, Like, Comment
 from posts.serializers import PostSerializer, PostDetailSerializer, CommentSerializer, LikeSerializer
 
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from bson import ObjectId
+from bson import ObjectId, errors as bson_errors
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -27,8 +27,10 @@ class PostDetailView(RetrieveUpdateDestroyAPIView):
     lookup_field = '_id'
 
     def check_object_permissions(self, request, obj):
+        safe_methods = ('GET', 'HEAD', 'OPTIONS')
         super().check_object_permissions(request, obj)
-        if request.method == 'GET':
+
+        if request.method in safe_methods:
             return
 
         if request.user._id != obj.author._id:
@@ -100,13 +102,25 @@ class CommentView(ListCreateAPIView):
         return Comment.objects.filter(post=ObjectId(_id))
 
     def perform_create(self, serializer):
-        if serializer.is_valid(raise_exception=True):
-            return serializer.save(author=self.request.user, post=Post.objects.get(_id=ObjectId(self.kwargs['_id'])))
+        try:
+            if serializer.is_valid(raise_exception=True):
+                return serializer.save(author=self.request.user, post=Post.objects.get(_id=ObjectId(self.kwargs['_id'])))
+        except (Post.DoesNotExist, bson_errors.InvalidId):
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
     def create(self, request, *args, **kwargs):
         try:
             comment = self.perform_create(self.get_serializer(data=request.data))
             return Response(status=status.HTTP_201_CREATED, data=self.get_serializer(comment).data)
 
-        except Post.DoesNotExist:
+        except (Post.DoesNotExist, bson_errors.InvalidId):
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+    def list(self, request, *args, **kwargs):
+        try:
+            response = super().list(request, *args, **kwargs)
+            response.data['post'] = PostSerializer(instance=Post.objects.get(_id=ObjectId(self.kwargs['_id']))).data
+            return response
+
+        except (Post.DoesNotExist, bson_errors.InvalidId):
             return Response(status=status.HTTP_404_NOT_FOUND)
