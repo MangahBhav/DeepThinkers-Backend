@@ -31,7 +31,7 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ['_id', 'title', 'content', 'date', 'user', 'anonymous', 'likes_count', 'comments_count',
+        fields = ['_id', 'title', 'content', 'date', 'user', 'anonymous', 'comments_count',
                   'likes_details', 'liked']
 
 

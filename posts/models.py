@@ -24,10 +24,6 @@ class Post(models.Model):
             return None
         return self.author
 
-    @property
-    def likes_count(self):
-        return self.likes.count()
-
     # @property
     # def comments_count(self):
     #     return self.comments.count()
