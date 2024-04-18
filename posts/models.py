@@ -87,14 +87,14 @@ class Like(models.Model):
 def update_post_likes(sender, instance, created, **kwargs):
     if created:
         post = instance.post
-        setattr(post, instance.category, getattr(post, instance.category) + 1)
+        setattr(post, instance.category, getattr(post, instance.category) or 1 + 1)
         post.save()
 
 
 @receiver(post_delete, sender=Like)
 def update_post_likes_on_delete(sender, instance, **kwargs):
     post = instance.post
-    setattr(post, instance.category, getattr(post, instance.category) - 1)
+    setattr(post, instance.category, getattr(post, instance.category) or 1 - 1)
     post.save()
 
 
@@ -102,6 +102,7 @@ def update_post_likes_on_delete(sender, instance, **kwargs):
 def update_comment_count(sender, instance, created, **kwargs):
     if created:
         post = instance.post
+        post.comments_count = post.comments_count or 1
         post.comments_count += 1
         post.save()
 
@@ -109,5 +110,6 @@ def update_comment_count(sender, instance, created, **kwargs):
 @receiver(post_delete, sender=Comment)
 def update_comment_count_on_delete(sender, instance, **kwargs):
     post = instance.post
+    post.comments_count = post.comments_count or 1
     post.comments_count -= 1
     post.save()
