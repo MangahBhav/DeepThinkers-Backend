@@ -32,10 +32,10 @@ class Post(models.Model):
     def likes_details(self):
 
         return {
-            "very_deep": self.very_deep,
-            "deep": self.deep,
-            "shallow": self.shallow,
-            "very_shallow": self.very_shallow
+            "very_deep": self.very_deep or 0,
+            "deep": self.deep or 0,
+            "shallow": self.shallow or 0,
+            "very_shallow": self.very_shallow or 0
         }
 
     def get_liked(self, user):
