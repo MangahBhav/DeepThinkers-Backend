@@ -1,5 +1,6 @@
 from djongo import models
-
+from django.dispatch import receiver
+from django.db.models.signals import post_save, post_delete
 
 # Create your models here.
 
@@ -10,6 +11,11 @@ class Post(models.Model):
     content = models.TextField()
     author = models.ForeignKey('users.User', on_delete=models.CASCADE)
     anonymous = models.BooleanField(default=False)
+    very_deep = models.IntegerField(default=0)
+    deep = models.IntegerField(default=0)
+    shallow = models.IntegerField(default=0)
+    very_shallow = models.IntegerField(default=0)
+    comments_count = models.IntegerField(default=0)
     date = models.DateTimeField(auto_now_add=True)
 
     @property
@@ -22,19 +28,18 @@ class Post(models.Model):
     def likes_count(self):
         return self.likes.count()
 
-    @property
-    def comments_count(self):
-        return self.comments.count()
+    # @property
+    # def comments_count(self):
+    #     return self.comments.count()
 
     @property
     def likes_details(self):
-        likes = self.likes.all()
 
         return {
-            "very_deep": len(list(filter(lambda x: x.category == "very_deep", likes))),
-            "deep": len(list(filter(lambda x: x.category == "deep", likes))),
-            "shallow": len(list(filter(lambda x: x.category == "shallow", likes))),
-            "very_shallow": len(list(filter(lambda x: x.category == "very_shallow", likes)))
+            "very_deep": self.very_deep,
+            "deep": self.deep,
+            "shallow": self.shallow,
+            "very_shallow": self.very_shallow
         }
 
     def get_liked(self, user):
@@ -80,3 +85,33 @@ class Like(models.Model):
 
     def __str__(self):
         return self.category
+
+
+@receiver(post_save, sender=Like)
+def update_post_likes(sender, instance, created, **kwargs):
+    if created:
+        post = instance.post
+        setattr(post, instance.category, getattr(post, instance.category) + 1)
+        post.save()
+
+
+@receiver(post_delete, sender=Like)
+def update_post_likes_on_delete(sender, instance, **kwargs):
+    post = instance.post
+    setattr(post, instance.category, getattr(post, instance.category) - 1)
+    post.save()
+
+
+@receiver(post_save, sender=Comment)
+def update_comment_count(sender, instance, created, **kwargs):
+    if created:
+        post = instance.post
+        post.comments_count += 1
+        post.save()
+
+
+@receiver(post_delete, sender=Comment)
+def update_comment_count_on_delete(sender, instance, **kwargs):
+    post = instance.post
+    post.comments_count -= 1
+    post.save()
