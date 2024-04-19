@@ -83,14 +83,14 @@ class Like(models.Model):
 def update_post_likes(sender, instance, created, **kwargs):
     if created:
         post = instance.post
-        setattr(post, instance.category, getattr(post, instance.category) + 1)
+        setattr(post, instance.category, (getattr(post, instance.category) or 0) + 1)
         post.save()
 
 
 @receiver(post_delete, sender=Like)
 def update_post_likes_on_delete(sender, instance, **kwargs):
     post = instance.post
-    setattr(post, instance.category, getattr(post, instance.category) - 1)
+    setattr(post, instance.category, (getattr(post, instance.category) or 1) - 1)
     post.save()
 
 
