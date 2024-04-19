@@ -98,7 +98,7 @@ def update_post_likes_on_delete(sender, instance, **kwargs):
 def update_comment_count(sender, instance, created, **kwargs):
     if created:
         post = instance.post
-        post.comments_count = post.comments_count or 1
+        post.comments_count = post.comments_count or 0
         post.comments_count += 1
         post.save()
 
