@@ -29,6 +29,9 @@ class User(AbstractUser, models.Model):
         token = jwt.encode(user_token_payload, settings.SECRET_KEY, settings.JWT_ENCRYPTION_METHOD)
         return token
 
+    def added_friend(self, friend):
+        return self.initiated_friend_requests.filter(receiver=friend).exists()
+
     def save(self, *args, **kwargs):
         super(User, self).save(*args, **kwargs)
 
