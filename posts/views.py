@@ -98,7 +98,7 @@ class CommentView(ListCreateAPIView):
     lookup_field = '_id'
 
     def get_queryset(self):
-        _id = self.kwargs['_id']
+        _id = self.kwargs.get('_id')
         return Comment.objects.filter(post=ObjectId(_id))
 
     def perform_create(self, serializer):
@@ -124,3 +124,25 @@ class CommentView(ListCreateAPIView):
 
         except (Post.DoesNotExist, bson_errors.InvalidId):
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+class CommentDetailView(RetrieveUpdateDestroyAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    lookup_field = '_id'
+
+    def get_object(self):
+        try:
+            return Comment.objects.get(_id=ObjectId(self.kwargs['_id']))
+        except Comment.DoesNotExist:
+            raise Http404("comment does not exist")
+
+    def check_object_permissions(self, request, obj):
+        if request and request.user.is_authenticated:
+            if request.user._id != obj.author._id:
+                self.permission_denied(request, message='You do not have permission to perform this action.')
+        return super().check_object_permissions(request, obj)
+
+    def perform_destroy(self, instance):
+        self.check_object_permissions(self.request, instance)
+        instance.delete()
