@@ -15,7 +15,7 @@ class DefaultNoPagination(PageNumberPagination):
             return None
 
         if 'page' not in request.query_params:
-            page_size = queryset.count()
+            page_size = queryset.count() or 1
 
         paginator = self.django_paginator_class(queryset, page_size)
         page_number = self.get_page_number(request, paginator)
