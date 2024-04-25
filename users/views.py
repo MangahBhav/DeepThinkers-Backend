@@ -5,7 +5,7 @@ from rest_framework.exceptions import ValidationError
 from users.models import User, FriendRequest
 from users.serializers import UserSerializer, LoginSerializer, FriendRequestSerializer
 from bson import ObjectId
-
+from rest_framework import filters
 from django.http import Http404
 
 
@@ -74,6 +74,8 @@ class UserDetailView(RetrieveUpdateDestroyAPIView):
 class UserSearchView(ListAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['username', 'email']
 
     def get_queryset(self):
         return User.objects.all()
