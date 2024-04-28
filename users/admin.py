@@ -1,3 +1,11 @@
 from django.contrib import admin
 
-# Register your models here.
+from esoteric_minds.utils import BaseModelAdmin
+from users.models import User
+
+
+@admin.register(User)
+class UserModelAdmin(BaseModelAdmin):
+    pass
+
+
