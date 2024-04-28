@@ -10,6 +10,7 @@ class Post(models.Model):
     title = models.CharField(max_length=100)
     content = models.TextField()
     author = models.ForeignKey('users.User', on_delete=models.CASCADE)
+    topic = models.ForeignKey('posts.Topic', on_delete=models.CASCADE, null=True)
     anonymous = models.BooleanField(default=False)
     very_deep = models.IntegerField(default=0)
     deep = models.IntegerField(default=0)
@@ -78,6 +79,13 @@ class Like(models.Model):
     def __str__(self):
         return self.category
 
+
+class Topic(models.Model):
+    _id = models.ObjectIdField(primary_key=True)
+    name = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.name
 
 @receiver(post_save, sender=Like)
 def update_post_likes(sender, instance, created, **kwargs):
