@@ -13,8 +13,13 @@ from django.http import Http404
 
 class PostView(ListCreateAPIView):
     serializer_class = PostSerializer
-    queryset = Post.objects.all()
+    # queryset = Post.objects.all()
     permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        if self.kwargs.get('user_id'):
+            return Post.objects.filter(author=ObjectId(self.kwargs['user_id']))
+        return Post.objects.all()
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
