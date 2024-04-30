@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
-from users.models import User, FriendRequest
+from users.models import User, FriendRequest, Block
+from bson import ObjectId, errors as bson_errors
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -51,3 +52,20 @@ class FriendRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = FriendRequest
         fields = "__all__"
+
+
+class BlockUserSerializer(serializers.ModelSerializer):
+    user = serializers.CharField(read_only=True)
+    blocked_user = serializers.CharField()
+
+    class Meta:
+        model = Block
+        fields = "__all__"
+
+    def save(self, **kwargs):
+        try:
+            blocked_user = User.objects.get(_id=ObjectId(self.validated_data['blocked_user']))
+        except (User.DoesNotExist, bson_errors.InvalidId):
+            raise serializers.ValidationError({"blocked_user": "Invalid user id"})
+
+        super().save(blocked_user=blocked_user, **kwargs)

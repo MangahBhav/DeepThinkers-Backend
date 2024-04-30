@@ -45,3 +45,11 @@ class FriendRequest(models.Model):
     receiver = models.ForeignKey('users.User', on_delete=models.CASCADE,
                                  related_name='received_friend_requests')
     mutual = models.BooleanField(default=False)
+
+
+class Block(models.Model):
+    _id = models.ObjectIdField(primary_key=True)
+    user = models.ForeignKey('users.User', on_delete=models.CASCADE,
+                             related_name='user_blocks')
+    blocked_user = models.ForeignKey('users.User', on_delete=models.CASCADE,
+                                     related_name='blocked_by_others')

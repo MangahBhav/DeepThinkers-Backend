@@ -1,9 +1,9 @@
 from rest_framework.generics import CreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, ListCreateAPIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.exceptions import ValidationError
-from users.models import User, FriendRequest
-from users.serializers import UserSerializer, LoginSerializer, FriendRequestSerializer
+from users.models import User, FriendRequest, Block
+from users.serializers import UserSerializer, LoginSerializer, FriendRequestSerializer, BlockUserSerializer
 from bson import ObjectId
 from rest_framework import filters
 from django.http import Http404
@@ -130,3 +130,14 @@ class FriendRequestView(ListCreateAPIView):
 
         except FriendRequest.DoesNotExist:
             pass
+
+
+class BlockUserView(CreateAPIView):
+    serializer_class = BlockUserSerializer
+    queryset = Block.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        return serializer.save(user=self.request.user)
+
+
