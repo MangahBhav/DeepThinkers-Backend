@@ -9,11 +9,18 @@ class UserSerializer(serializers.ModelSerializer):
     profile_image = serializers.ImageField(required=False)
     password = serializers.CharField(write_only=True, required=True)
     added_friend = serializers.SerializerMethodField()
+    blocked_user = serializers.SerializerMethodField()
 
     def get_added_friend(self, user):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             return request.user.added_friend(user)
+        return False
+
+    def get_blocked_user(self, user):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return request.user.blocked_user(user)
         return False
 
     def create(self, validated_data):
@@ -22,7 +29,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['_id', 'username', 'email', 'profile_image', 'added_friend', 'password', 'date']
+        fields = ['_id', 'username', 'email', 'profile_image', 'added_friend', 'blocked_user', 'password', 'date']
 
 
 class LoginSerializer(serializers.Serializer):

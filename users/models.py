@@ -32,6 +32,9 @@ class User(AbstractUser, models.Model):
     def added_friend(self, friend):
         return self.initiated_friend_requests.filter(receiver=friend).exists()
 
+    def blocked_user(self, user):
+        return self.user_blocks.filter(blocked_user=user).exists()
+
     def save(self, *args, **kwargs):
         super(User, self).save(*args, **kwargs)
 
