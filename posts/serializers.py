@@ -71,6 +71,10 @@ class FlagPostSerializer(serializers.ModelSerializer):
         except (Post.DoesNotExist, bson_errors.InvalidId):
             raise serializers.ValidationError({"post": "Invalid post id"})
 
+        user = kwargs.get('user')
+        if FlagPost.objects.filter(user=user, post=post).exists():
+            raise serializers.ValidationError({"post": "Post already flagged"})
+
         super().save(post=post, **kwargs)
 
     class Meta:

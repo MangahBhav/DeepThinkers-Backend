@@ -75,4 +75,9 @@ class BlockUserSerializer(serializers.ModelSerializer):
         except (User.DoesNotExist, bson_errors.InvalidId):
             raise serializers.ValidationError({"blocked_user": "Invalid user id"})
 
+        user = kwargs.get('user')
+
+        if Block.objects.filter(user=user, blocked_user=blocked_user).exists():
+            raise serializers.ValidationError({"blocked_user": "You have already blocked this user."})
+
         super().save(blocked_user=blocked_user, **kwargs)
