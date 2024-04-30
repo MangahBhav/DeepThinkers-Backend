@@ -1,10 +1,11 @@
 # add views from posts/views.py:
 from django.urls import path
 
-from posts.views import PostView, PostDetailView, PostLikeView, CommentView
+from posts.views import PostView, PostDetailView, PostLikeView, CommentView, FlagPostView
 
 urlpatterns = [
     path('', PostView.as_view(), name='posts'),
+    path('flags/', FlagPostView.as_view(), name="flag-post"),
     path('<str:_id>/', PostDetailView.as_view(), name='post-detail'),
     path('<str:_id>/comments/', CommentView.as_view(), name='comments'),
     # path('posts/<str:pk>/comments/<str:comment_pk>/',

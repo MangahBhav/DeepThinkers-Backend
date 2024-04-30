@@ -1,9 +1,10 @@
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 
 from posts.models import Post, Like, Comment
-from posts.serializers import PostSerializer, PostDetailSerializer, CommentSerializer, LikeSerializer
+from posts.serializers import PostSerializer, PostDetailSerializer, CommentSerializer, LikeSerializer, \
+    FlagPostSerializer
 
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from bson import ObjectId, errors as bson_errors
 from rest_framework.response import Response
 from rest_framework import status
@@ -151,3 +152,11 @@ class CommentDetailView(RetrieveUpdateDestroyAPIView):
     def perform_destroy(self, instance):
         self.check_object_permissions(self.request, instance)
         instance.delete()
+
+
+class FlagPostView(ListCreateAPIView):
+    serializer_class = FlagPostSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        return serializer.save(user=self.request.user)

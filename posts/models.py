@@ -38,6 +38,9 @@ class Post(models.Model):
     def get_liked(self, user):
         return self.likes.filter(user=user).first()
 
+    def get_flagged(self, user):
+        return FlagPost.objects.filter(post=self, user=user).exists()
+
     def __str__(self):
         return self.title
 
@@ -87,6 +90,7 @@ class Topic(models.Model):
     def __str__(self):
         return self.name
 
+
 @receiver(post_save, sender=Like)
 def update_post_likes(sender, instance, created, **kwargs):
     if created:
@@ -117,3 +121,9 @@ def update_comment_count_on_delete(sender, instance, **kwargs):
     post.comments_count = post.comments_count or 1
     post.comments_count -= 1
     post.save()
+
+
+class FlagPost(models.Model):
+    _id = models.ObjectIdField(primary_key=True)
+    user = models.ForeignKey('users.User', on_delete=models.CASCADE)
+    post = models.ForeignKey('posts.Post', on_delete=models.CASCADE)
