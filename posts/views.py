@@ -1,15 +1,16 @@
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, CreateAPIView
 
-from posts.models import Post, Like, Comment
+from posts.models import Post, Like, Comment, Topic, TopicMember
 from posts.serializers import PostSerializer, PostDetailSerializer, CommentSerializer, LikeSerializer, \
-    FlagPostSerializer
+    FlagPostSerializer, TopicSerializer, TopicMemberSerializer
 
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from bson import ObjectId, errors as bson_errors
 from rest_framework.response import Response
 from rest_framework import status
 
-from django.http import Http404
+from django.http import Http404, HttpResponseBadRequest
+from rest_framework.exceptions import PermissionDenied
 
 
 class PostView(ListCreateAPIView):
@@ -20,10 +21,25 @@ class PostView(ListCreateAPIView):
     def get_queryset(self):
         if self.kwargs.get('user_id'):
             return Post.objects.filter(author=ObjectId(self.kwargs['user_id']))
-        return Post.objects.all()
+
+        if self.kwargs.get('topic_id'):
+            return Post.objects.filter(topic=ObjectId(self.kwargs['topic_id']))
+
+        return Post.objects.filter(topic=None)
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        topic = self.kwargs.get('topic_id')
+        # check if user is a member
+        if topic:
+            try:
+                topic = Topic.objects.get(_id=ObjectId(topic))
+
+            except (Topic.DoesNotExist, bson_errors.InvalidId):
+                raise Http404("topic not found")
+
+        if topic and not self.request.user.is_member(topic):
+            raise PermissionDenied("user is not a member of this topic")
+        serializer.save(author=self.request.user, topic=topic if topic else None)
 
 
 class PostDetailView(RetrieveUpdateDestroyAPIView):
@@ -77,10 +93,7 @@ class PostLikeView(RetrieveUpdateDestroyAPIView):
         return Post.objects.get(_id=ObjectId(_id))
 
     def get_object(self):
-        try:
-            return Like.objects.get(user=self.request.user, post=self.get_post())
-        except Like.DoesNotExist:
-            return None
+        return Like.objects.filter(user=self.request.user, post=self.get_post())
 
     # def get_serializer(self, *args, **kwargs):
     #     return self.serializer_class(instance=self.get_object())
@@ -90,7 +103,7 @@ class PostLikeView(RetrieveUpdateDestroyAPIView):
         post = self.get_post()
 
         liked = self.get_object()
-        if liked and liked.category == self.request.data.get('category'):
+        if liked.exists():
             liked.delete()
         else:
             # like = Like.objects.create(author=user, post=post)
@@ -160,3 +173,41 @@ class FlagPostView(ListCreateAPIView):
 
     def perform_create(self, serializer):
         return serializer.save(user=self.request.user)
+
+
+class TopicListView(ListAPIView):
+    serializer_class = TopicSerializer
+    queryset = Topic.objects.all()
+    permission_classes = [IsAuthenticated]
+
+
+class TopicMemberView(ListCreateAPIView):
+    serializer_class = TopicMemberSerializer
+    queryset = TopicMember.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    # def get_serializer(self, *args, **kwargs):
+    #     try:
+    #         topic = Topic.objects.get(_id=ObjectId(self.kwargs.get('topic_id')))
+    #
+    #         if self.request.user.is_member(topic):
+    #             member = TopicMember.objects.filter(topic=topic, user=self.request.user)[0]
+    #             return self.serializer_class(instance=member, data=self.request.data)
+    #
+    #         return super().get_serializer(*args, **kwargs)
+    #
+    #     except (Topic.DoesNotExist, bson_errors.InvalidId):
+    #         print(self.kwargs.get('topic_id'))
+    #         raise Http404("topic not found")
+
+    def perform_create(self, serializer):
+        try:
+            topic = Topic.objects.get(_id=ObjectId(self.kwargs.get('topic_id')))
+            if self.request.user.is_member(topic):
+                raise PermissionDenied("you have already joined this topic.")
+
+            serializer.save(user=self.request.user, topic=topic)
+
+        except (Topic.DoesNotExist, bson_errors.InvalidId):
+            print(self.kwargs.get('topic_id'))
+            raise Http404("topic not found")

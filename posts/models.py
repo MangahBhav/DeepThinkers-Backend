@@ -91,6 +91,12 @@ class Topic(models.Model):
         return self.name
 
 
+class TopicMember(models.Model):
+    _id = models.ObjectIdField(primary_key=True)
+    topic = models.ForeignKey("posts.Topic", on_delete=models.CASCADE, related_name="members")
+    user = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="joined_topics")
+
+
 @receiver(post_save, sender=Like)
 def update_post_likes(sender, instance, created, **kwargs):
     if created:

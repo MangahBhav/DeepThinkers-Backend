@@ -35,6 +35,9 @@ class User(AbstractUser, models.Model):
     def blocked_user(self, user):
         return self.user_blocks.filter(blocked_user=user).exists()
 
+    def is_member(self, topic):
+        return self.joined_topics.filter(topic=topic).exists()
+
     def save(self, *args, **kwargs):
         super(User, self).save(*args, **kwargs)
 

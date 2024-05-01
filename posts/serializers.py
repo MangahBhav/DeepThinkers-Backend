@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from posts.models import Post, Comment, Like, FlagPost
+from posts.models import Post, Comment, Like, FlagPost, Topic, TopicMember
 from users.serializers import UserSerializer
 
 from bson import ObjectId, errors as bson_errors
@@ -79,4 +79,19 @@ class FlagPostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FlagPost
+        fields = "__all__"
+
+
+class TopicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Topic
+        fields = "__all__"
+
+
+class TopicMemberSerializer(serializers.ModelSerializer):
+    topic = serializers.CharField(required=False)
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = TopicMember
         fields = "__all__"
