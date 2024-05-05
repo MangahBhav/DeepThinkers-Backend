@@ -77,6 +77,9 @@ class BlockUserSerializer(serializers.ModelSerializer):
 
         user = kwargs.get('user')
 
+        if user == blocked_user:
+            raise serializers.ValidationError({"blocked_user": "You are not allowed to block yourself."})
+
         if Block.objects.filter(user=user, blocked_user=blocked_user).exists():
             raise serializers.ValidationError({"blocked_user": "You have already blocked this user."})
 

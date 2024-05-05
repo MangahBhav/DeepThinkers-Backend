@@ -1,10 +1,11 @@
-from rest_framework.generics import CreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, ListCreateAPIView
+from rest_framework.generics import (CreateAPIView, RetrieveUpdateDestroyAPIView,
+                                     ListAPIView, ListCreateAPIView, DestroyAPIView)
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.exceptions import ValidationError
 from users.models import User, FriendRequest, Block
 from users.serializers import UserSerializer, LoginSerializer, FriendRequestSerializer, BlockUserSerializer
-from bson import ObjectId
+from bson import ObjectId, errors as bson_errors
 from rest_framework import filters
 from django.http import Http404
 
@@ -132,7 +133,7 @@ class FriendRequestView(ListCreateAPIView):
             pass
 
 
-class BlockUserView(CreateAPIView):
+class BlockUserView(CreateAPIView, DestroyAPIView):
     serializer_class = BlockUserSerializer
     queryset = Block.objects.all()
     permission_classes = [IsAuthenticated]
@@ -140,4 +141,20 @@ class BlockUserView(CreateAPIView):
     def perform_create(self, serializer):
         return serializer.save(user=self.request.user)
 
+    def get_object(self):
+        queryset = self.get_queryset()
+        try:
+            blocked_user = User.objects.get(_id=ObjectId(self.request.data.get('blocked_user')))
+        except (User.DoesNotExist, bson_errors.InvalidId):
+            raise ValidationError({"blocked_user": "Invalid user id"})
+
+        blocked_user_queryset = queryset.filter(user=self.request.user, blocked_user=blocked_user)
+        if blocked_user_queryset.exists():
+            return blocked_user_queryset[0]
+        return None
+
+    def perform_destroy(self, instance):
+        if not instance:
+            raise ValidationError({"blocked_user": "you have not blocked this user."})
+        instance.delete()
 
