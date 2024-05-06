@@ -83,4 +83,14 @@ class BlockUserSerializer(serializers.ModelSerializer):
         if Block.objects.filter(user=user, blocked_user=blocked_user).exists():
             raise serializers.ValidationError({"blocked_user": "You have already blocked this user."})
 
+        # remove friendship requests
+        friend_request = FriendRequest.objects.filter(initiator=user, receiver=blocked_user)
+        mutual_friend_request = FriendRequest.objects.filter(initiator=blocked_user, receiver=user)
+
+        if friend_request.exists():
+            friend_request.delete()
+
+        if mutual_friend_request.exists():
+            mutual_friend_request.delete()
+
         super().save(blocked_user=blocked_user, **kwargs)

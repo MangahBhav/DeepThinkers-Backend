@@ -82,6 +82,15 @@ class FlagPostSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class ListFlagPostSerializer(serializers.ModelSerializer):
+    user = serializers.CharField()
+    post = PostSerializer()
+
+    class Meta:
+        model = FlagPost
+        fields = "__all__"
+
+
 class TopicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Topic

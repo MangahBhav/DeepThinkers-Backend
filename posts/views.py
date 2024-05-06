@@ -1,8 +1,8 @@
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, CreateAPIView
 
-from posts.models import Post, Like, Comment, Topic, TopicMember
+from posts.models import Post, Like, Comment, Topic, TopicMember, FlagPost
 from posts.serializers import PostSerializer, PostDetailSerializer, CommentSerializer, LikeSerializer, \
-    FlagPostSerializer, TopicSerializer, TopicMemberSerializer
+    FlagPostSerializer, TopicSerializer, TopicMemberSerializer, ListFlagPostSerializer
 
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from bson import ObjectId, errors as bson_errors
@@ -93,7 +93,10 @@ class PostLikeView(RetrieveUpdateDestroyAPIView):
         return Post.objects.get(_id=ObjectId(_id))
 
     def get_object(self):
-        return Like.objects.filter(user=self.request.user, post=self.get_post())
+        liked = Like.objects.filter(user=self.request.user, post=self.get_post())
+        if liked.exists():
+            return Like.objects.filter(user=self.request.user, post=self.get_post())[0]
+        return None
 
     # def get_serializer(self, *args, **kwargs):
     #     return self.serializer_class(instance=self.get_object())
@@ -103,7 +106,7 @@ class PostLikeView(RetrieveUpdateDestroyAPIView):
         post = self.get_post()
 
         liked = self.get_object()
-        if liked.exists():
+        if liked:
             liked.delete()
         else:
             # like = Like.objects.create(author=user, post=post)
@@ -168,8 +171,17 @@ class CommentDetailView(RetrieveUpdateDestroyAPIView):
 
 
 class FlagPostView(ListCreateAPIView):
-    serializer_class = FlagPostSerializer
+    # serializer_class = FlagPostSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return FlagPostSerializer
+        else:
+            return ListFlagPostSerializer
+
+    def get_queryset(self):
+        return FlagPost.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
         return serializer.save(user=self.request.user)
