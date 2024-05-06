@@ -1,4 +1,5 @@
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, CreateAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, CreateAPIView, \
+    DestroyAPIView
 
 from posts.models import Post, Like, Comment, Topic, TopicMember, FlagPost
 from posts.serializers import PostSerializer, PostDetailSerializer, CommentSerializer, LikeSerializer, \
@@ -10,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from django.http import Http404, HttpResponseBadRequest
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 
 
 class PostView(ListCreateAPIView):
@@ -170,12 +171,15 @@ class CommentDetailView(RetrieveUpdateDestroyAPIView):
         instance.delete()
 
 
-class FlagPostView(ListCreateAPIView):
+SAFE_METHODS = ('GET', 'HEAD', 'OPTIONS')
+
+
+class FlagPostView(ListCreateAPIView, DestroyAPIView):
     # serializer_class = FlagPostSerializer
     permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
-        if self.request.method == "POST":
+        if self.request.method not in SAFE_METHODS:
             return FlagPostSerializer
         else:
             return ListFlagPostSerializer
@@ -185,6 +189,23 @@ class FlagPostView(ListCreateAPIView):
 
     def perform_create(self, serializer):
         return serializer.save(user=self.request.user)
+
+    def get_object(self):
+        queryset = self.get_queryset()
+        try:
+            post = Post.objects.get(_id=ObjectId(self.request.data.get('post')))
+        except (Post.DoesNotExist, bson_errors.InvalidId):
+            raise ValidationError({"post": "Invalid post id"})
+
+        flagged_post_queryset = queryset.filter(user=self.request.user, post=post)
+        if flagged_post_queryset.exists():
+            return flagged_post_queryset[0]
+        return None
+
+    def perform_destroy(self, instance):
+        if not instance:
+            raise ValidationError({"post": "you have not flagged this post."})
+        instance.delete()
 
 
 class TopicListView(ListAPIView):
