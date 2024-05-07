@@ -42,7 +42,7 @@ class Post(models.Model):
         return FlagPost.objects.filter(post=self, user=user).exists()
 
     def __str__(self):
-        return self.title
+        return self.content
 
     class Meta:
         ordering = ['-_id']
