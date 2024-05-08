@@ -85,6 +85,8 @@ class UserSearchView(ListAPIView):
 class FriendRequestView(ListCreateAPIView):
     serializer_class = FriendRequestSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['username', 'email']
 
     def get_serializer_class(self):
         if self.request.method == "GET":
