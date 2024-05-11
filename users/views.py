@@ -16,6 +16,19 @@ class RegisterView(CreateAPIView):
     permission_classes = []
     authentication_classes = []
 
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        if serializer.is_valid(raise_exception=True):
+            if request.ipinfo:
+                if not request.ipinfo.all.get('bogon'):
+                    serializer.validated_data['city'] = request.ipinfo.all.get('city', '')
+                    serializer.validated_data['state'] = request.ipinfo.all.get('region', '')
+                    serializer.validated_data['country'] = f"{request.ipinfo.all.get('country_name', '')}"
+            user = serializer.create(serializer.validated_data)
+            return Response(data=self.serializer_class(user).data)
+
 
 class LoginView(CreateAPIView):
     serializer_class = LoginSerializer

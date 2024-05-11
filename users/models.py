@@ -15,7 +15,10 @@ class User(AbstractUser, models.Model):
     email = models.EmailField(unique=True)
     profile_image = CloudinaryField('profile_image', folder='esoteric-minds', null=True, blank=True)
     date = models.DateTimeField(auto_now_add=True)
-    # friends = models.ManyToManyField('users.User', related_name='friends')
+
+    city = models.CharField(max_length=200, null=True)
+    country = models.CharField(max_length=200, default="")
+    state = models.CharField(max_length=200, null=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
