@@ -6,7 +6,7 @@ from posts.models import Post, Comment, Topic
 
 @admin.register(Post)
 class PostModelAdmin(BaseModelAdmin):
-    pass
+    search_fields = ['content', 'author__username', 'author__email']
 
 
 @admin.register(Comment)
