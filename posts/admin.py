@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from esoteric_minds.utils import BaseModelAdmin
-from posts.models import Post, Comment, Topic
+from posts.models import Post, Comment, Topic, FlagPost
 
 
 @admin.register(Post)
@@ -16,4 +16,9 @@ class CommentModelAdmin(BaseModelAdmin):
 
 @admin.register(Topic)
 class TopicModelAdmin(BaseModelAdmin):
+    pass
+
+
+@admin.register(FlagPost)
+class FlagPostModelAdmin(BaseModelAdmin):
     pass

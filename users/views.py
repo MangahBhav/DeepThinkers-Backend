@@ -1,13 +1,21 @@
+import datetime
+
 from rest_framework.generics import (CreateAPIView, RetrieveUpdateDestroyAPIView,
                                      ListAPIView, ListCreateAPIView, DestroyAPIView)
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.exceptions import ValidationError
+
+from esoteric_minds import settings
 from users.models import User, FriendRequest, Block
-from users.serializers import UserSerializer, LoginSerializer, FriendRequestSerializer, BlockUserSerializer
+from users.serializers import UserSerializer, LoginSerializer, FriendRequestSerializer, BlockUserSerializer, \
+    PasswordResetSerializer
 from bson import ObjectId, errors as bson_errors
 from rest_framework import filters
 from django.http import Http404
+from django.core.mail import send_mail
+import jwt
 
 
 class RegisterView(CreateAPIView):
@@ -173,3 +181,46 @@ class BlockUserView(CreateAPIView, DestroyAPIView):
             raise ValidationError({"blocked_user": "you have not blocked this user."})
         instance.delete()
 
+
+class UserPasswordResetRequest(APIView):
+    def post(self, request, *args, **kwargs):
+        email = request.data.get('email', '').strip()
+        user = User.objects.filter(email=email).first()
+
+        if user:
+            user_token_payload = {
+                "user_id": str(user._id),
+                "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=10),
+                "iat": datetime.datetime.utcnow()
+            }
+            token = jwt.encode(user_token_payload, settings.SECRET_KEY, settings.JWT_ENCRYPTION_METHOD)
+            reset_link = f"https://kofyimages.com/password-reset/{token}"
+            subject = 'Password Reset [Esoteric Minds]'
+            message = f"""
+                            <p>Hi {user.first_name.title()},
+
+                            There was a request to change your password!
+
+                            If you did not make this request then please ignore this email.
+
+                            Otherwise, please click this link to change your password: [<a href="{reset_link}">link</a>]
+                            </p>
+                       """
+            send_mail(subject, '', settings.DEFAULT_FROM_EMAIL,
+                      [user.email], html_message=message)
+            return Response({'success': True, 'message': f'successfully sent password reset to {user.email}'})
+        else:
+            return Response({'success': False, 'message': 'user with this email does not exist'}, status=400)
+
+
+class PasswordResetView(APIView):
+    serializer_class = PasswordResetSerializer
+
+    def post(self, request, *args, **kwargs):
+        password_reset_serializer = self.serializer_class(data=request.data)
+        if password_reset_serializer.is_valid(raise_exception=True):
+            user_id = password_reset_serializer.validated_data['user_id']
+            user = User.objects.get(_id=ObjectId(user_id))
+            user.set_password(password_reset_serializer.validated_data['new_password'])
+            user.save()
+            return Response({'success': True, 'message': 'successfully reset password'})

@@ -205,3 +205,8 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 IPINFO_TOKEN = os.environ.get("IPINFO_TOKEN")
 IPINFO_FILTER = lambda request: (os.environ.get('DJANGO_ENV') != "production")
+
+EMAIL_BACKEND = 'django_mailgun_mime.backends.MailgunMIMEBackend'
+MAILGUN_API_KEY = os.environ.get('MAILGUN_API_KEY')
+MAILGUN_DOMAIN_NAME = 'info.kofyimages.com'
+DEFAULT_FROM_EMAIL = 'kofy@info.kofyimages.com'

@@ -1,7 +1,10 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
+
+from esoteric_minds import settings
 from users.models import User, FriendRequest, Block
 from bson import ObjectId, errors as bson_errors
+import jwt
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -95,3 +98,21 @@ class BlockUserSerializer(serializers.ModelSerializer):
             mutual_friend_request.delete()
 
         super().save(blocked_user=blocked_user, **kwargs)
+
+
+class PasswordResetSerializer(serializers.Serializer):
+    token = serializers.CharField()
+    new_password = serializers.CharField()
+    confirm_password = serializers.CharField()
+
+    def validate(self, attrs):
+        try:
+            user_payload = jwt.decode(attrs.get('token'), settings.SECRET_KEY, settings.JWT_ENCRYPTION_METHOD)
+        except (jwt.exceptions.InvalidSignatureError, jwt.ExpiredSignatureError, jwt.exceptions.DecodeError) as e:
+            raise serializers.ValidationError('invalid password reset token provided')
+        else:
+            attrs['user_id'] = user_payload.get('user_id')
+        if attrs.get('new_password') != attrs.get('confirm_password'):
+            raise serializers.ValidationError('confirm password must be the same as new password')
+        return attrs
+
