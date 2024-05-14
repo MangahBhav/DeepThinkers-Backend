@@ -26,7 +26,7 @@ from .middleware import TokenAuthMiddleware
 
 application = ProtocolTypeRouter({
   'http': get_asgi_application(),
-  'websocket': AllowedHostsOriginValidator(TokenAuthMiddleware(URLRouter(
+  'websocket': TokenAuthMiddleware(URLRouter(
       posts.routing.websocket_urlpatterns
-  ))),
+  )),
 })
