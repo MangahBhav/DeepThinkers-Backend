@@ -6,6 +6,6 @@ from users.models import User
 
 @admin.register(User)
 class UserModelAdmin(BaseModelAdmin):
-    pass
+    search_fields = ['username', 'email']
 
 
