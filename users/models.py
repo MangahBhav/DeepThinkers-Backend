@@ -4,7 +4,7 @@ from djongo import models
 from django.contrib.auth.models import AbstractUser
 from cloudinary.models import CloudinaryField
 
-from esoteric_minds import settings
+from django.conf import settings
 import jwt
 
 

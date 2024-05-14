@@ -26,16 +26,18 @@ class PostSerializer(serializers.ModelSerializer):
 
     def get_liked(self, post):
         request = self.context.get('request')
-        if request and request.user.is_authenticated:
-            liked = post.get_liked(request.user)
+        user = request.user if request and request.user.is_authenticated else self.context.get('user')
+        if user:
+            liked = post.get_liked(self.context.get('user') or request.user)
             if liked:
                 return liked.category
         return None
 
     def get_flagged(self, post):
         request = self.context.get('request')
-        if request and request.user.is_authenticated:
-            flagged = post.get_flagged(request.user)
+        user = request.user if request and request.user.is_authenticated else self.context.get('user')
+        if user:
+            flagged = post.get_flagged(self.context.get('user') or request.user)
             return flagged
         return False
 

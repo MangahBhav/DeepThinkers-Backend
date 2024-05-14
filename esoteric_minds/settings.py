@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'users',
     'posts',
+    "channels"
 ]
 
 INSTALLED_APPS += ('corsheaders',)
@@ -83,6 +84,13 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'esoteric_minds.wsgi.application'
+ASGI_APPLICATION = 'esoteric_minds.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases

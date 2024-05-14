@@ -8,9 +8,20 @@ https://docs.djangoproject.com/en/5.0/howto/deployment/asgi/
 """
 
 import os
-
+from channels.auth import AuthMiddlewareStack
+from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
+
+import posts.routing
+from .middleware import TokenAuthMiddleware
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'esoteric_minds.settings')
 
-application = get_asgi_application()
+# application = get_asgi_application()
+
+application = ProtocolTypeRouter({
+  'http': get_asgi_application(),
+  'websocket': TokenAuthMiddleware(URLRouter(
+      posts.routing.websocket_urlpatterns
+  )),
+})
