@@ -10,21 +10,21 @@ from bson import ObjectId
 @database_sync_to_async
 def get_user(auth_token):
     if auth_token is None:
-        return AnonymousUser
+        return None
     try:
         if len(auth_token.split(' ')) != 2 or auth_token.split(' ')[0] != 'Bearer':
-            return AnonymousUser
+            return None
 
         token = auth_token.split(' ')[1]
         user_payload = jwt.decode(token, settings.SECRET_KEY, settings.JWT_ENCRYPTION_METHOD)
     except (jwt.exceptions.InvalidSignatureError, jwt.ExpiredSignatureError, jwt.exceptions.DecodeError) as e:
-        return AnonymousUser
+        return None
     else:
         user_id = user_payload.get('user_id')
         try:
             user = User.objects.get(_id=ObjectId(user_id))
         except User.DoesNotExist:
-            return AnonymousUser
+            return None
         else:
             return user
 
@@ -42,5 +42,5 @@ class TokenAuthMiddleware(BaseMiddleware):
                 token_key = None
         except ValueError:
             token_key = None
-        scope['user'] = AnonymousUser() if token_key is None else await get_user(token_key)
+        scope['user'] = None if token_key is None else await get_user(token_key)
         return await super().__call__(scope, receive, send)
