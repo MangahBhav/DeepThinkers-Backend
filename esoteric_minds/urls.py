@@ -27,4 +27,5 @@ urlpatterns = [
     path('users/', include('users.urls')),
     path('posts/', include('posts.urls')),
     path('comments/<str:_id>/', CommentDetailView.as_view(), name='comment-detail'),
+    path('ads/', include('ads.urls'))
 ]
