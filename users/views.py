@@ -35,7 +35,7 @@ class RegisterView(CreateAPIView):
                     serializer.validated_data['state'] = request.ipinfo.all.get('region', '')
                     serializer.validated_data['country'] = f"{request.ipinfo.all.get('country_name', '')}"
             user = serializer.create(serializer.validated_data)
-            return Response(data=self.serializer_class(user).data)
+            return Response(data=self.serializer_class(user).data, status=201)
 
 
 class LoginView(CreateAPIView):
