@@ -11,8 +11,11 @@ class BaseModelAdmin(admin.ModelAdmin):
         selected_id_list = request.POST.getlist('_selected_action')
         request.POST._mutable = True
         request.POST['_selected_action'] = list(map(lambda x: ObjectId(x), selected_id_list))
-        queryset = self.model.objects.filter(_id__in=request.POST['_selected_action'])
-        queryset.delete()
+        try:
+            queryset = self.model.objects.filter(_id__in=request.POST['_selected_action'])
+            queryset.delete()
+        except self.model.DoesNotExist:
+            return
 
 
 class BaseModelForm(ModelForm):
