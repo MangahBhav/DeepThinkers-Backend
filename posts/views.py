@@ -29,15 +29,8 @@ class PostView(ListCreateAPIView):
 
         if self.kwargs.get('topic_id'):
             return Post.objects.filter(topic=ObjectId(self.kwargs['topic_id']))
-
-        # only cache here for now
-        cache_key = f"feed_{self.request.user._id}" if self.request.user.is_authenticated else "feed"
-        queryset = cache.get(cache_key)
         
-        if not queryset:
-            queryset = Post.objects.filter(topic=None)
-            cache.set(cache_key, queryset, 60 * 120)
-        return queryset
+        return Post.objects.filter(topic=None)
 
     def perform_create(self, serializer):
         topic = self.kwargs.get('topic_id')
@@ -57,6 +50,24 @@ class PostView(ListCreateAPIView):
     # def dispatch(self, request, *args, **kwargs):
     #     return super().dispatch(request, *args, **kwargs)
 
+    def list(self, request, *args, **kwargs):
+
+        cache_key = f"feed_{self.request.user._id}" if self.request.user.is_authenticated else "feed"
+        data = cache.get(cache_key)
+
+        if not data:
+            queryset = self.filter_queryset(self.get_queryset())
+
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+
+            serializer = self.get_serializer(queryset, many=True)
+            cache.set(cache_key, serializer.data, 60 * 120)
+            return Response(serializer.data)
+        
+        return Response(data=data)
 
 class PostDetailView(RetrieveUpdateDestroyAPIView):
     serializer_class = PostDetailSerializer
