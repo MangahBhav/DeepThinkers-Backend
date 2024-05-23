@@ -60,13 +60,14 @@ class PostView(ListCreateAPIView):
             page = self.paginate_queryset(queryset)
             if page is not None:
                 serializer = self.get_serializer(page, many=True)
-                cache.set(cache_key, serializer.data, 60 * 120)
-                return self.get_paginated_response(serializer.data)
+                response = self.get_paginated_response(serializer.data)
+                cache.set(cache_key, response.data, 60 * 120)
+                return response
 
             serializer = self.get_serializer(queryset, many=True)
-            cache.set(cache_key, serializer.data, 60 * 120)
-            return Response(serializer.data)
-        
+            response = Response(serializer.data)
+            cache.set(cache_key, response.data, 60 * 120)
+            return response
         
         return Response(data=data)
 
