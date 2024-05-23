@@ -52,7 +52,7 @@ class PostView(ListCreateAPIView):
 
     def list(self, request, *args, **kwargs):
 
-        cache_key = f"feed_{self.request.user._id}" if self.request.user.is_authenticated else "feed"
+        cache_key = f"feed_{str(self.request.user._id)}" if self.request.user.is_authenticated else "feed"
         data = cache.get(cache_key)
 
         if not data:
