@@ -48,7 +48,8 @@ INSTALLED_APPS = [
     'users',
     'posts',
     'ads',
-    "channels"
+    "channels",
+    "chats"
 ]
 
 INSTALLED_APPS += ('corsheaders',)
@@ -219,3 +220,10 @@ EMAIL_BACKEND = 'django_mailgun_mime.backends.MailgunMIMEBackend'
 MAILGUN_API_KEY = os.environ.get('MAILGUN_API_KEY')
 MAILGUN_DOMAIN_NAME = 'info.kofyimages.com'
 DEFAULT_FROM_EMAIL = 'kofy@info.kofyimages.com'
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}

@@ -1,6 +1,7 @@
 from djongo import models
 from django.dispatch import receiver
 from django.db.models.signals import post_save, post_delete
+from django.utils.functional import cached_property
 
 # Create your models here.
 
@@ -25,7 +26,7 @@ class Post(models.Model):
             return None
         return self.author
 
-    @property
+    @cached_property
     def likes_details(self):
 
         return {
@@ -49,6 +50,7 @@ class Post(models.Model):
 
 
 class Comment(models.Model):
+
     _id = models.ObjectIdField(primary_key=True)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
     content = models.TextField()

@@ -12,6 +12,10 @@ from rest_framework import status
 
 from django.http import Http404, HttpResponseBadRequest
 from rest_framework.exceptions import PermissionDenied, ValidationError
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+
+from django.core.cache import cache
 
 
 class PostView(ListCreateAPIView):
@@ -26,7 +30,14 @@ class PostView(ListCreateAPIView):
         if self.kwargs.get('topic_id'):
             return Post.objects.filter(topic=ObjectId(self.kwargs['topic_id']))
 
-        return Post.objects.filter(topic=None)
+        # only cache here for now
+        cache_key = f"feed_{self.request.user._id}" if self.request.user.is_authenticated else "feed"
+        queryset = cache.get(cache_key)
+        
+        if not queryset:
+            queryset = Post.objects.filter(topic=None)
+            cache.set(cache_key, queryset, 60 * 120)
+        return queryset
 
     def perform_create(self, serializer):
         topic = self.kwargs.get('topic_id')
@@ -41,6 +52,10 @@ class PostView(ListCreateAPIView):
         if topic and not self.request.user.is_member(topic):
             raise PermissionDenied("user is not a member of this topic")
         serializer.save(author=self.request.user, topic=topic if topic else None)
+
+    # @method_decorator(cache_page(60 * 120))  # Cache the view for 2 hours
+    # def dispatch(self, request, *args, **kwargs):
+    #     return super().dispatch(request, *args, **kwargs)
 
 
 class PostDetailView(RetrieveUpdateDestroyAPIView):
