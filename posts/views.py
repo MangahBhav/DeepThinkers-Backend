@@ -58,19 +58,8 @@ class PostView(ListCreateAPIView):
 
     def list(self, request, *args, **kwargs):
         if self.kwargs.get('user_id') or self.kwargs.get('topic_id'):
-            queryset = self.filter_queryset(self.get_queryset())
-            serializer = self.get_serializer(queryset, many=True)
-
-            page = self.paginate_queryset(queryset)
-            if page is not None:
-                serializer = self.get_serializer(page, many=True)
-                response = self.get_paginated_response(serializer.data)
-                return response
-
-            serializer = self.get_serializer(queryset, many=True)
-            response = Response(serializer.data)
-            return response
-
+            return super().list(request, *args, **kwargs)
+        
         cache_key = f"feed_{str(self.request.user._id)}" if self.request.user.is_authenticated else "feed"
         data = cache.get(cache_key)
 
