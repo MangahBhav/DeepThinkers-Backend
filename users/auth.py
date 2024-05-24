@@ -23,7 +23,7 @@ class JWTAuthentication(TokenAuthentication):
         else:
             user_id = user_payload.get('user_id')
             try:
-                user = User.objects.get(_id=ObjectId(user_id))
+                user = User.objects.prefetch_related('user_blocks', 'flagged_posts').get(_id=ObjectId(user_id))
             except User.DoesNotExist:
                 raise AuthenticationFailed('Invalid Authentication token')
             else:
