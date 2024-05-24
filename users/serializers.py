@@ -17,13 +17,13 @@ class UserSerializer(serializers.ModelSerializer):
     def get_added_friend(self, user):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
-            return request.user.added_friend(user)
+            return request.user.has_added_friend(user)
         return False
 
     def get_blocked_user(self, user):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
-            return request.user.blocked_user(user)
+            return request.user.has_blocked_user(user)
         return False
 
     def create(self, validated_data):

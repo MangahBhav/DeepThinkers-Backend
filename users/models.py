@@ -34,11 +34,11 @@ class User(AbstractUser, models.Model):
         token = jwt.encode(user_token_payload, settings.SECRET_KEY, settings.JWT_ENCRYPTION_METHOD)
         return token
 
-    # def added_friend(self, friend):
-    #     return self.initiated_friend_requests.filter(receiver=friend).exists()
+    def has_added_friend(self, friend):
+        return self.initiated_friend_requests.filter(receiver=friend).exists()
 
-    # def blocked_user(self, user):
-    #     return self.user_blocks.filter(blocked_user=user).exists()
+    def has_blocked_user(self, user):
+        return self.user_blocks.filter(blocked_user=user).exists()
 
     def is_member(self, topic):
         return self.joined_topics.filter(topic=topic).exists()
