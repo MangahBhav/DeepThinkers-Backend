@@ -20,8 +20,14 @@ class LikeSerializer(serializers.ModelSerializer):
 
 
 class PostUserSerializer(serializers.ModelSerializer):
-    added_friend = serializers.BooleanField(default=True)
-    blocked_user = serializers.BooleanField(default=False)
+    added_friend = serializers.BooleanField(default=True, initial=True)
+    blocked_user = serializers.BooleanField(default=False, initial=False)
+
+    def get_added_friend(self, obj):
+        return True
+
+    def get_blocked_user(self, obj):
+        return False
 
     class Meta:
         model = User
