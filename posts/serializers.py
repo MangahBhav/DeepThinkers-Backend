@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from posts.models import Post, Comment, Like, FlagPost, Topic, TopicMember
+from users.models import User
 from users.serializers import UserSerializer
 
 from bson import ObjectId, errors as bson_errors
@@ -18,8 +19,17 @@ class LikeSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class PostUserSerializer(serializers.ModelSerializer):
+    added_friend = serializers.BooleanField(default=True)
+    blocked_user = serializers.BooleanField(default=False)
+
+    class Meta:
+        model = User
+        fields = ['_id', 'username', 'email', 'profile_image', 'blocked_user', 'added_friend', 'date', 'city', 'state', 'country']
+
+
 class PostSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
+    user = PostUserSerializer(read_only=True)
 
     liked = serializers.SerializerMethodField()
     flagged = serializers.SerializerMethodField()

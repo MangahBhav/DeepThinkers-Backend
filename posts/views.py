@@ -25,12 +25,14 @@ class PostView(ListCreateAPIView):
 
     def get_queryset(self):
         if self.kwargs.get('user_id'):
-            return Post.objects.filter(author=ObjectId(self.kwargs['user_id']))
+            return Post.objects.filter(author=ObjectId(self.kwargs['user_id'])).select_related('author')
 
         if self.kwargs.get('topic_id'):
-            return Post.objects.filter(topic=ObjectId(self.kwargs['topic_id']))
+            return Post.objects.filter(topic=ObjectId(self.kwargs['topic_id'])).select_related('author')
         
-        return Post.objects.filter(topic=None)
+        if self.request.user.is_authenticated:
+            return Post.objects.exclude(author__in=list(map(lambda x: x.blocked_user, self.request.user.user_blocks.all())))
+        return Post.objects.filter(topic=None).select_related('author')
 
     def perform_create(self, serializer):
         topic = self.kwargs.get('topic_id')

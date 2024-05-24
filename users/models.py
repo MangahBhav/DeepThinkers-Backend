@@ -20,6 +20,8 @@ class User(AbstractUser, models.Model):
     country = models.CharField(max_length=200, default="")
     state = models.CharField(max_length=200, null=True)
 
+    # blocked_users = models.ArrayReferenceField('users.User', on_delete=models.CASCADE)
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
 
