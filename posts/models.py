@@ -109,9 +109,12 @@ def update_post_likes(sender, instance, created, **kwargs):
 
 @receiver(post_delete, sender=Like)
 def update_post_likes_on_delete(sender, instance, **kwargs):
-    post = instance.post
-    setattr(post, instance.category, (getattr(post, instance.category) or 1) - 1)
-    post.save()
+    try:
+        post = instance.post
+        setattr(post, instance.category, (getattr(post, instance.category) or 1) - 1)
+        post.save()
+    except Post.DoesNotExist:
+        return
 
 
 @receiver(post_save, sender=Comment)
@@ -125,10 +128,13 @@ def update_comment_count(sender, instance, created, **kwargs):
 
 @receiver(post_delete, sender=Comment)
 def update_comment_count_on_delete(sender, instance, **kwargs):
-    post = instance.post
-    post.comments_count = post.comments_count or 1
-    post.comments_count -= 1
-    post.save()
+    try:
+        post = instance.post
+        post.comments_count = post.comments_count or 1
+        post.comments_count -= 1
+        post.save()
+    except Post.DoesNotExist:
+        return
 
 
 class FlagPost(models.Model):
