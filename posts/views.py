@@ -30,8 +30,6 @@ class PostView(ListCreateAPIView):
         if self.kwargs.get('topic_id'):
             return Post.objects.filter(topic=ObjectId(self.kwargs['topic_id'])).select_related('author')
         
-        if self.request.user.is_authenticated:
-            return Post.objects.exclude(author__in=list(map(lambda x: x.blocked_user, self.request.user.user_blocks.all())))
         return Post.objects.filter(topic=None).select_related('author')
 
     def perform_create(self, serializer):
