@@ -39,7 +39,7 @@ class PostSerializer(serializers.ModelSerializer):
     user = PostUserSerializer(read_only=True)
 
     liked = serializers.SerializerMethodField()
-    flagged = serializers.BooleanField(default=False)
+    flagged = serializers.BooleanField(default=False, read_only=True)
 
     def get_liked(self, post):
         request = self.context.get('request')
