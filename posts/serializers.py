@@ -32,7 +32,7 @@ class PostSerializer(serializers.ModelSerializer):
     user = PostUserSerializer(read_only=True)
 
     liked = serializers.SerializerMethodField()
-    flagged = serializers.SerializerMethodField()
+    flagged = serializers.BooleanField(default=False)
 
     def get_liked(self, post):
         request = self.context.get('request')
@@ -43,13 +43,13 @@ class PostSerializer(serializers.ModelSerializer):
                 return liked.category
         return None
 
-    def get_flagged(self, post):
-        request = self.context.get('request')
-        user = request.user if request and request.user.is_authenticated else self.context.get('user')
-        if user:
-            flagged = post.get_flagged(self.context.get('user') or request.user)
-            return flagged
-        return False
+    # def get_flagged(self, post):
+    #     request = self.context.get('request')
+    #     user = request.user if request and request.user.is_authenticated else self.context.get('user')
+    #     if user:
+    #         flagged = post.get_flagged(self.context.get('user') or request.user)
+    #         return flagged
+    #     return False
 
     class Meta:
         model = Post

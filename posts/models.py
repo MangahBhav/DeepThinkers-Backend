@@ -133,5 +133,5 @@ def update_comment_count_on_delete(sender, instance, **kwargs):
 
 class FlagPost(models.Model):
     _id = models.ObjectIdField(primary_key=True)
-    user = models.ForeignKey('users.User', on_delete=models.CASCADE)
+    user = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='flagged_posts')
     post = models.ForeignKey('posts.Post', on_delete=models.CASCADE)

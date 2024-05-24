@@ -14,6 +14,7 @@ from django.http import Http404, HttpResponseBadRequest
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+from djongo.models import Q
 
 from django.core.cache import cache
 
@@ -30,6 +31,11 @@ class PostView(ListCreateAPIView):
         if self.kwargs.get('topic_id'):
             return Post.objects.filter(topic=ObjectId(self.kwargs['topic_id'])).select_related('author')
         
+        if self.request.user.is_authenticated:
+            return Post.objects.prefetch_related('likes').exclude(
+                Q(author__in=list(map(lambda x: x.blocked_user, self.request.user.user_blocks.all()))) |
+                Q(_id__in=list(map(lambda x: x.post._id, self.request.user.flagged_posts.all())))
+            )
         return Post.objects.filter(topic=None).select_related('author')
 
     def perform_create(self, serializer):
