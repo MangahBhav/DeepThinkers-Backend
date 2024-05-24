@@ -20,6 +20,7 @@ class LikeSerializer(serializers.ModelSerializer):
 
 
 class PostUserSerializer(serializers.ModelSerializer):
+    profile_image = serializers.ImageField(required=False)
     added_friend = serializers.BooleanField(default=True, initial=True)
     blocked_user = serializers.BooleanField(default=False, initial=False)
 
