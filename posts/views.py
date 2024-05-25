@@ -57,28 +57,28 @@ class PostView(ListCreateAPIView):
     # def dispatch(self, request, *args, **kwargs):
     #     return super().dispatch(request, *args, **kwargs)
 
-    def list(self, request, *args, **kwargs):
-        if self.kwargs.get('user_id') or self.kwargs.get('topic_id'):
-            return super().list(request, *args, **kwargs)
+    # def list(self, request, *args, **kwargs):
+    #     if self.kwargs.get('user_id') or self.kwargs.get('topic_id'):
+    #         return super().list(request, *args, **kwargs)
         
-        cache_key = f"feed_{str(self.request.user._id)}" if self.request.user.is_authenticated else "feed"
-        data = cache.get(cache_key)
+    #     cache_key = f"feed_{str(self.request.user._id)}" if self.request.user.is_authenticated else "feed"
+    #     data = cache.get(cache_key)
 
-        if not data:
-            queryset = self.filter_queryset(self.get_queryset())
-            page = self.paginate_queryset(queryset)
-            if page is not None:
-                serializer = self.get_serializer(page, many=True)
-                response = self.get_paginated_response(serializer.data)
-                cache.set(cache_key, response.data, 60 * 120)
-                return response
+    #     if not data:
+    #         queryset = self.filter_queryset(self.get_queryset())
+    #         page = self.paginate_queryset(queryset)
+    #         if page is not None:
+    #             serializer = self.get_serializer(page, many=True)
+    #             response = self.get_paginated_response(serializer.data)
+    #             cache.set(cache_key, response.data, 60 * 120)
+    #             return response
 
-            serializer = self.get_serializer(queryset, many=True)
-            response = Response(serializer.data)
-            cache.set(cache_key, response.data, 60 * 120)
-            return response
+    #         serializer = self.get_serializer(queryset, many=True)
+    #         response = Response(serializer.data)
+    #         cache.set(cache_key, response.data, 60 * 120)
+    #         return response
         
-        return Response(data=data)
+    #     return Response(data=data)
 
 class PostDetailView(RetrieveUpdateDestroyAPIView):
     serializer_class = PostDetailSerializer
