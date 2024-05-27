@@ -3,8 +3,8 @@ from ads.models import Advert
 
 
 class AdvertSerializer(serializers.ModelSerializer):
-    image = serializers.CharField()
-    
+    image = serializers.ImageField()
+
     class Meta:
         model = Advert
         fields = "__all__"
