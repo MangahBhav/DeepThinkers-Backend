@@ -256,6 +256,13 @@ class TopicMemberView(ListCreateAPIView):
     queryset = TopicMember.objects.all()
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        try:
+            topic = Topic.objects.get(_id=ObjectId(self.kwargs.get('topic_id')))
+            return TopicMember.objects.filter(topic=topic)
+        except (Topic.DoesNotExist, bson_errors.InvalidId):
+            raise Http404("topic not found")
+
     # def get_serializer(self, *args, **kwargs):
     #     try:
     #         topic = Topic.objects.get(_id=ObjectId(self.kwargs.get('topic_id')))
@@ -279,5 +286,4 @@ class TopicMemberView(ListCreateAPIView):
             serializer.save(user=self.request.user, topic=topic)
 
         except (Topic.DoesNotExist, bson_errors.InvalidId):
-            print(self.kwargs.get('topic_id'))
             raise Http404("topic not found")
