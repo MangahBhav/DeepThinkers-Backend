@@ -49,8 +49,7 @@ INSTALLED_APPS = [
     'posts',
     'ads',
     "channels",
-    "chats",
-    "django_redis"
+    "chats"
 ]
 
 INSTALLED_APPS += ('corsheaders',)
@@ -222,21 +221,3 @@ MAILGUN_API_KEY = os.environ.get('MAILGUN_API_KEY')
 MAILGUN_DOMAIN_NAME = 'info.kofyimages.com'
 DEFAULT_FROM_EMAIL = 'kofy@info.kofyimages.com'
 
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": os.environ.get("REDIS_URL"),
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient"
-        },
-        "KEY_PREFIX": "cache"
-    }
-}
-
-# CACHES = {
-#     'default': {
-#         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-#         'LOCATION': 'unique-snowflake',
-#     }
-    
-# }
