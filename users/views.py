@@ -194,7 +194,7 @@ class UserPasswordResetRequest(APIView):
                 "iat": datetime.datetime.utcnow()
             }
             token = jwt.encode(user_token_payload, settings.SECRET_KEY, settings.JWT_ENCRYPTION_METHOD)
-            reset_link = f"https://kofyimages.com/password-reset/{token}"
+            reset_link = f"https://esotericmynds.com/password-reset/{token}"
             subject = 'Password Reset [Esoteric Minds]'
             message = f"""
                             <p>Hi {user.first_name.title()},
