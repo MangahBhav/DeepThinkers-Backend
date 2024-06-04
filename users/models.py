@@ -28,7 +28,7 @@ class User(AbstractUser, models.Model):
     def create_auth_token(self):
         user_token_payload = {
             "user_id": str(self._id),
-            "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=720),
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(days=7),
             "iat": datetime.datetime.utcnow()
         }
         token = jwt.encode(user_token_payload, settings.SECRET_KEY, settings.JWT_ENCRYPTION_METHOD)
