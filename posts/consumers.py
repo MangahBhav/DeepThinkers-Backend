@@ -14,7 +14,6 @@ class PostFeedConsumer(WebsocketConsumer):
         self.room = None
 
     def connect(self):
-        print(self.scope['user'])
         self.room_name = 'feed'
         async_to_sync(self.channel_layer.group_add)(
             self.room_name,
@@ -49,5 +48,5 @@ class PostFeedConsumer(WebsocketConsumer):
             )
 
     def post_feed(self, event):
-        print(event)
+        print('from post feed method?', event)
         self.send(text_data=json.dumps(event))

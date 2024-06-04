@@ -18,15 +18,20 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'esoteric_minds.settings')
 django.setup()
 
 import posts.routing
+import chats.routing
 from .middleware import TokenAuthMiddleware
 
 
 
 # application = get_asgi_application()
+url_patterns = []
+
+url_patterns.extend(posts.routing.websocket_urlpatterns)
+url_patterns.extend(chats.routing.websocket_urlpatterns)
 
 application = ProtocolTypeRouter({
   'http': get_asgi_application(),
   'websocket': TokenAuthMiddleware(URLRouter(
-      posts.routing.websocket_urlpatterns
+      url_patterns
   )),
 })

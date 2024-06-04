@@ -5,6 +5,8 @@ import jwt
 from django.conf import settings
 from users.models import User
 from bson import ObjectId
+import re
+from urllib.parse import parse_qs
 
 
 @database_sync_to_async
@@ -12,11 +14,7 @@ def get_user(auth_token):
     if auth_token is None:
         return None
     try:
-        if len(auth_token.split(' ')) != 2 or auth_token.split(' ')[0] != 'Bearer':
-            return None
-
-        token = auth_token.split(' ')[1]
-        user_payload = jwt.decode(token, settings.SECRET_KEY, settings.JWT_ENCRYPTION_METHOD)
+        user_payload = jwt.decode(auth_token, settings.SECRET_KEY, settings.JWT_ENCRYPTION_METHOD)
     except (jwt.exceptions.InvalidSignatureError, jwt.ExpiredSignatureError, jwt.exceptions.DecodeError) as e:
         return None
     else:
@@ -35,12 +33,18 @@ class TokenAuthMiddleware(BaseMiddleware):
 
     async def __call__(self, scope, receive, send):
         try:
-            authorization_header = list(filter(lambda x: x[0].decode() == 'authorization', scope['headers']))
-            if authorization_header:
-                token_key = authorization_header[0][1].decode()
+            authorization_token = re.search(r'token=([^&]*)', str(scope['query_string']))
+
+            if authorization_token:
+                authorization_token = authorization_token.group(1).replace("'", "")
+                print(authorization_token)
+
+            if authorization_token:
+                token_key = authorization_token
             else:
                 token_key = None
         except ValueError:
             token_key = None
+
         scope['user'] = None if token_key is None else await get_user(token_key)
         return await super().__call__(scope, receive, send)
