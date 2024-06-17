@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'drf_spectacular_sidecar',
     'cloudinary',
     'rest_framework',
+    'django_crontab',
     'users',
     'posts',
     'ads',
@@ -221,3 +222,8 @@ MAILGUN_API_KEY = os.environ.get('MAILGUN_API_KEY')
 MAILGUN_DOMAIN_NAME = 'info.kofyimages.com'
 DEFAULT_FROM_EMAIL = 'kofy@info.kofyimages.com'
 
+# CRON JOB CONFIGURATION
+CRONJOBS = [
+    ('* * * * *', 'esoteric_minds.tasks.set_star_user'),
+    # Add more cron jobs as needed
+]
