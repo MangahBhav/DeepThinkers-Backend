@@ -144,12 +144,17 @@ class PostLikeView(RetrieveUpdateDestroyAPIView):
         post = self.get_post()
 
         liked = self.get_object()
+        previous_category = None
+
         if liked:
+            previous_category = liked.category
             liked.delete()
-        else:
-            # like = Like.objects.create(author=user, post=post)
-            serializer.save(user=user, post=post, category=self.request.data.get('category'))
-            # post.likes.add(like)
+
+        # if incoming like category is the same as the previous one, don't create a new like
+        if previous_category and previous_category == self.request.data.get('category'):
+            return
+
+        serializer.save(user=user, post=post, category=self.request.data.get('category'))
 
 
 class CommentView(ListCreateAPIView):
