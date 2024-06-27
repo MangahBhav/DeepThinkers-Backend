@@ -32,10 +32,9 @@ class PostView(ListCreateAPIView):
             return Post.objects.filter(topic=ObjectId(self.kwargs['topic_id'])).select_related('author')
         
         if self.request.user.is_authenticated:
-            return Post.objects.prefetch_related('likes').exclude(
+            return Post.objects.prefetch_related('likes').filter(topic=None).exclude(
                 Q(author__in=list(map(lambda x: x.blocked_user, self.request.user.user_blocks.all()))) |
                 Q(_id__in=list(map(lambda x: x.post._id, self.request.user.flagged_posts.all()))),
-                topic=None
             )
         return Post.objects.filter(topic=None).select_related('author')
 
