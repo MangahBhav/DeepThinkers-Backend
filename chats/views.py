@@ -6,6 +6,7 @@ from chats.models import Chat, Member
 from chats.serializers import ChatSerializer, MessageSerializer
 from users.models import User
 from bson import ObjectId
+from django.db.models import Q
 
 
 class CreateMessageView(CreateAPIView):
@@ -17,7 +18,8 @@ class CreateMessageView(CreateAPIView):
             receiver = User.objects.get(_id=ObjectId(serializer.validated_data.pop('receiver')))
         except User.DoesNotExist:
             raise ValidationError(detail={"receiver": "This user has been deleted or does not exist"})
-        chat = Chat.objects.filter(members__user__in=[self.request.user, receiver])
+        
+        chat = Chat.objects.filter(Q(members__user=self.request.user) & Q(members__user=receiver))
 
         if chat.exists():
             return serializer.save(chat=chat[0], user=self.request.user)
