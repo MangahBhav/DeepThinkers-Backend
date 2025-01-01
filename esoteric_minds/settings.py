@@ -223,12 +223,12 @@ MAILGUN_DOMAIN_NAME = 'info.kofyimages.com'
 DEFAULT_FROM_EMAIL = 'kofy@info.kofyimages.com'
 
 # TASK SCHEDULER
-SCHEDULER_CONFIG = {
-    "apscheduler.jobstores.default": {
-        "class": "django_apscheduler.jobstores:DjangoJobStore"
-    },
-    'apscheduler.executors.processpool': {
-        "type": "threadpool"
-    },
-}
-SCHEDULER_AUTOSTART = True
+# SCHEDULER_CONFIG = {
+#     "apscheduler.jobstores.default": {
+#         "class": "django_apscheduler.jobstores:DjangoJobStore"
+#     },
+#     'apscheduler.executors.processpool': {
+#         "type": "threadpool"
+#     },
+# }
+# SCHEDULER_AUTOSTART = True
