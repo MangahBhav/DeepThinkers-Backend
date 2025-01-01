@@ -231,4 +231,4 @@ DEFAULT_FROM_EMAIL = 'kofy@info.kofyimages.com'
 #         "type": "threadpool"
 #     },
 # }
-# SCHEDULER_AUTOSTART = True
+SCHEDULER_AUTOSTART = False
