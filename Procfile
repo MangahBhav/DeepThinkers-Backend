@@ -1,0 +1,1 @@
+web: gunicorn esoteric_minds.wsgi -w 4 --timeout 600 --log-file -
