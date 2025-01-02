@@ -118,7 +118,7 @@ else:
             "CLIENT": {
                 'name': 'esoteric_minds',
                 'host': os.environ.get('MONGO_URI'),
-                'username': 'Kcee',
+                'username': os.environ.get("MONGO_USERNAME"),
                 "password": os.environ.get('MONGO_PASSWORD', ''),
                 "authMechanism": "SCRAM-SHA-1"
             }
